@@ -10,11 +10,14 @@ from PIL import Image
 from PIL import ImageDraw
 import cv2
 import numpy as np
+import copy
+import random
 from math import *
 
 
-def rot(img, angel, shape, max_angel):
+def rot(img, angel, shape, max_angel,point_dict):
     """
+    仿射变换
     使图像轻微的畸变
     """
     size_o = [shape[1], shape[0]]
@@ -33,10 +36,21 @@ def rot(img, angel, shape, max_angel):
     M = cv2.getPerspectiveTransform(pts1, pts2)
     dst = cv2.warpPerspective(img, M, size)
 
-    return dst
+    # 转换坐标点
+    rot_pointG = []
+    rot_point = []
+    for pointx4 in point_dict:
+
+        for pt in pointx4:
+            rot_p = retRotPoint(pt,M)
+            rot_point.append(rot_p)
+        rot_pointG.append(rot_point.copy())
+        rot_point.clear()
+
+    return dst, rot_pointG
 
 
-def rotRandrom(img, factor, size):
+def rotRandrom(img, factor, size,point_dict):
     """
     添加透视畸变
 
@@ -50,7 +64,31 @@ def rotRandrom(img, factor, size):
                        [shape[1] - r(factor), shape[0] - r(factor)]])
     M = cv2.getPerspectiveTransform(pts1, pts2)
     dst = cv2.warpPerspective(img, M, size)
-    return dst
+    rot_pointG = []
+    rot_point = []
+    for pointx4 in point_dict:
+        for pt in pointx4:
+            rot_p = retRotPoint(pt,M)
+            rot_point.append(rot_p)
+        rot_pointG.append(rot_point.copy())
+        rot_point.clear()
+    return dst, rot_pointG
+
+
+def retRotPoint(pt, rotM):
+    """
+    经过透视变换后的坐标点
+    :param pt: 原坐标点
+    :param rotM: 透视变换矩阵(3x3)
+    :return: 透视变换后的坐标
+    """
+    pt3D = np.array([[pt[0]], [pt[1]], [1]], dtype=float)
+    ptM = rotM.dot(pt3D)
+    ptx = ptM[0][0]
+    pty = ptM[1][0]
+    ptz = ptM[2][0]
+    rotpt = (int(ptx / ptz), int(pty / ptz))
+    return rotpt
 
 
 def tfactor(img):
@@ -83,11 +121,11 @@ def random_envirment(img, data_set):
 
 
 def GenCh(f, val):
-    """生成中文字符
-
-    f 字体
-    val 字符
-    return 单个字符图片
+    """
+    生成中文字符
+    :param f: 字体
+    :param val: 字符
+    :return: 单个字符图片
     """
     img = Image.new("RGB", (45, 70), (255, 255, 255))  #"RGB"模式，(45,70)文件大小,(255,255,255)背景颜色
     draw = ImageDraw.Draw(img)
@@ -101,10 +139,9 @@ def GenCh(f, val):
 def GenCh1(f, val):
     """
     生成英文字符和数字
-
-    f 字体
-    val 字符
-    return 单个字符图片
+    :param f: 字体
+    :param val: 字符
+    :return: 单个字符图片
     """
     img = Image.new("RGB", (23, 70), (255, 255, 255))
     draw = ImageDraw.Draw(img)
@@ -148,3 +185,69 @@ def addNoise(img, sdev=0.5, avg=10):
     img[:, :, 1] = AddNoiseSingleChannel(img[:, :, 1])
     img[:, :, 2] = AddNoiseSingleChannel(img[:, :, 2])
     return img
+
+
+def edgeFill(img,pointG,fill_size=20):
+    """
+    图像边缘填充
+    :param img:图像
+    :param pointG: 坐标点
+    :param fill_size: 填充边缘大小
+    :return: 填充图像，坐标点
+    """
+
+    top_fill = fill_size + random.randint(0,15)
+    bottom_fill = fill_size + random.randint(0,15)
+    left_fill = fill_size + random.randint(0,15)
+    right_fill = fill_size + random.randint(0,15)
+    img = cv2.copyMakeBorder(img,top_fill,bottom_fill,left_fill,right_fill,cv2.BORDER_CONSTANT,value=(0,0,0))
+
+    # 转换点坐标
+    fill_pointG = []
+    fill_point = []
+    for pointx4 in pointG:
+        for pt in pointx4:
+            temp = (pt[0]+left_fill,pt[1]+top_fill)
+            fill_point.append(temp)
+        fill_pointG.append(fill_point.copy())
+        fill_point.clear()
+
+    return img,fill_pointG
+
+def convert(size, box):
+    """
+    坐标转换为yolo可训练的txt坐标
+    :param size:图像大小
+    :param box:坐标
+    :return:yolo坐标
+    """
+    # print(f'box={box}')
+    dw = 1. / (size[0])
+    dh = 1. / (size[1])
+    x = (box[0] + box[1]) / 2.0 - 1
+    y = (box[2] + box[3]) / 2.0 - 1
+    w = box[1] - box[0]
+    h = box[3] - box[2]
+    # print(f'x={x},y={y},w={w},h={h}')
+    x = x * dw
+    w = w * dw
+    y = y * dh
+    h = h * dh
+    # print(f't2,,x={x},y={y},w={w},h={h}')
+    return x, y, w, h
+
+
+def drawpoint(imgoo, pointG, str):
+    """
+    画出坐标点
+    :param imgoo:
+    :param pointG:
+    :param str:
+    :return:
+    """
+    img = copy.deepcopy(imgoo)
+    for pp in pointG:
+        for ptemp in pp:
+            cv2.circle(img, ptemp, 3, (0, 255, 0), 2)
+    cv2.imshow(str, img)
+    cv2.waitKey(0)

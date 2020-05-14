@@ -8,6 +8,8 @@
 from trnoise import *
 import os
 
+
+
 chars = {0: "京", 1: "沪", 2: "津", 3: "渝", 4: "冀", 5: "晋", 6: "蒙", 7: "辽", 8: "吉", 9: "黑", 10: "苏",
          11: "浙", 12: "皖", 13: "闽", 14: "赣", 15: "鲁", 16: "豫", 17: "鄂", 18: "湘", 19: "粤", 20: "桂",
          21: "琼", 22: "川", 23: "贵", 24: "云", 25: "藏", 26: "陕", 27: "甘", 28: "青", 29: "宁", 30: "新",
@@ -15,28 +17,6 @@ chars = {0: "京", 1: "沪", 2: "津", 3: "渝", 4: "冀", 5: "晋", 6: "蒙", 7
          41: "A", 42: "B", 43: "C", 44: "D", 45: "E", 46: "F", 47: "G", 48: "H", 49: "J", 50: "K",
          51: "L", 52: "M", 53: "N", 54: "P", 55: "Q", 56: "R", 57: "S", 58: "T", 59: "U", 60: "V",
          61: "W", 62: "X", 63: "Y", 64: "Z"}
-
-
-def genPlateString(pos, val):
-    """
-    生成车牌号码string
-    """
-    plateStr = ""
-    box = [0, 0, 0, 0, 0, 0, 0]
-    if pos != -1:
-        box[pos] = 1
-    for unit, cpos in zip(box, range(len(box))):
-        if unit == 1:
-            plateStr += val
-        else:
-            if cpos == 0:
-                plateStr += chars[r(31)]
-            elif cpos == 1:
-                plateStr += chars[41 + r(24)]
-            else:
-                plateStr += chars[31 + r(34)]
-
-    return plateStr
 
 
 class GenBluePlates:
@@ -47,6 +27,7 @@ class GenBluePlates:
         self.bg = cv2.resize(cv2.imread("./images/b1.bmp"), (226, 70))  # 车牌背景图片
         self.smu = cv2.imread("./images/smu2.jpg")
         self.noplates_path = []
+        self.pointG = []
         # 将NoPlates目录下的图片加入列表noplates_path
         for parent, parent_folder, filenames in os.walk(NoPlates):
             for filename in filenames:
@@ -61,15 +42,49 @@ class GenBluePlates:
         """
         offset = 2
         # 调整字符间的间距
+        # 第一个汉字
         self.img[0:70, offset + 8:offset + 8 + 23] = GenCh(self.fontC, text[0])
+        self.pointG.append([(offset + 8 - 1, 8), (offset + 8 + 23 + 1, 8),
+                            (offset + 8 - 1, 62), (offset + 8 + 23 + 1, 62)])  # p1(x,y),p2(x,y)...
+        # 第二个字符
         self.img[0:70, offset + 8 + 23 + 6:offset + 8 + 23 + 6 + 23] = GenCh1(self.fontE, text[1])
+        self.pointG.append([(offset + 8 + 23 + 6 - 1, 8), (offset + 8 + 23 + 6 + 23 + 1, 8),
+                            (offset + 8 + 23 + 6 - 1, 62), (offset + 8 + 23 + 6 + 23 + 1, 62)])
+        # 后面五个字符
         for i in range(5):
             base = offset + 8 + 23 + 6 + 23 + 17 + i * 23 + i * 6
             self.img[0:70, base: base + 23] = GenCh1(self.fontE, text[i + 2])
-        # cv2.imshow("img",self.img)
+            self.pointG.append([(base - 1, 8), (base + 23 + 1, 8),
+                                (base - 1, 62), (base + 23 + 1, 62)])
+        # for pp in self.pointG:
+        #     for ptemp in pp:
+        #         cv2.circle(self.img, ptemp, 3, (0, 255, 0), 2)
+        # cv2.imshow("img", self.img)
         # cv2.waitKey(0)
+        # print(self.pointG)
 
         return self.img
+
+    def genPlateString(self, pos, val):
+        """
+        生成车牌号码string
+        """
+        plateStr = ""
+        box = [0, 0, 0, 0, 0, 0, 0]
+        if pos != -1:
+            box[pos] = 1
+        for unit, cpos in zip(box, range(len(box))):
+            if unit == 1:
+                plateStr += val
+            else:
+                if cpos == 0:
+                    plateStr += chars[r(31)]
+                elif cpos == 1:
+                    plateStr += chars[41 + r(24)]
+                else:
+                    plateStr += chars[31 + r(34)]
+
+        return plateStr
 
     def getPlateImg(self, text):
         """
@@ -82,13 +97,22 @@ class GenBluePlates:
             # 白色字体
             fg = cv2.bitwise_not(fg)
             plate_img = cv2.bitwise_or(fg, self.bg)  # 加入背景
-            # 形态学变
-            plate_img = rot(plate_img, r(60) - 30, plate_img.shape, 30)
-            plate_img = rotRandrom(plate_img, 10, (plate_img.shape[1], plate_img.shape[0]))
+            plate_img,self.pointG = edgeFill(plate_img,self.pointG)
+
+            # 形态学变换
+            # cv2.imshow("start",plate_img)
+            plate_img, self.pointG = rot(plate_img, r(60) - 30, plate_img.shape, 30, self.pointG)
+            # print(self.pointG)
+            # drawpoint(plate_img,self.pointG,"rot")
+            plate_img, self.pointG = rotRandrom(plate_img, 10, (plate_img.shape[1], plate_img.shape[0]), self.pointG)
+            # drawpoint(plate_img, self.pointG, "rotrandrom")
+            # print(self.pointG)
             plate_img = tfactor(plate_img)
             plate_img = random_envirment(plate_img, self.noplates_path)
             plate_img = AddGauss(plate_img, 1 + r(4))
             plate_img = addNoise(plate_img)
+            cv2.imshow("o",plate_img)
+            cv2.waitKey(0)
 
             return plate_img
 
@@ -96,17 +120,17 @@ class GenBluePlates:
         if not os.path.exists(outputPath):
             os.mkdir(outputPath)
         for i in range(batchSize):
-            plateStr = genPlateString(-1, -1)
+            plateStr = self.genPlateString(-1, -1)
             img = self.getPlateImg(plateStr)
             img = cv2.resize(img, size)
             # cv2.imwrite(outputPath + "/" + str(plateStr) + ".jpg", img)
-            cv2.imencode(".jpg", img)[1].tofile(outputPath + "/" + str(plateStr) + ".jpg")
-            # cv2.imwrite(outputPath + "/" + str(i).zfill(2) + ".jpg", img)
+            # cv2.imencode(".jpg", img)[1].tofile(outputPath + "/" + str(plateStr) + ".jpg")
+            cv2.imwrite(outputPath + "/" + str(i).zfill(2) + ".jpg", img)
 
 
 def test():
     G = GenBluePlates("./font/platech.ttf", './font/platechar.ttf', "./NoPlates")
-    G.genBatch(10, "./plate", (272, 72))
+    G.genBatch(1, "./plate", (272, 72))
 
 
 if __name__ == '__main__':

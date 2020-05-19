@@ -8,8 +8,6 @@
 from trnoise import *
 import os
 
-
-
 chars = {0: "京", 1: "沪", 2: "津", 3: "渝", 4: "冀", 5: "晋", 6: "蒙", 7: "辽", 8: "吉", 9: "黑", 10: "苏",
          11: "浙", 12: "皖", 13: "闽", 14: "赣", 15: "鲁", 16: "豫", 17: "鄂", 18: "湘", 19: "粤", 20: "桂",
          21: "琼", 22: "川", 23: "贵", 24: "云", 25: "藏", 26: "陕", 27: "甘", 28: "青", 29: "宁", 30: "新",
@@ -28,6 +26,7 @@ class GenBluePlates:
         self.smu = cv2.imread("./images/smu2.jpg")
         self.noplates_path = []
         self.pointG = []
+        self.pointXml = []
         # 将NoPlates目录下的图片加入列表noplates_path
         for parent, parent_folder, filenames in os.walk(NoPlates):
             for filename in filenames:
@@ -96,7 +95,7 @@ class GenBluePlates:
             fg = self.draw_string(text.encode('utf-8').decode(encoding="utf-8"))
             # 白色字体
             fg = cv2.bitwise_not(fg)
-            plate_img = cv2.bitwise_or(fg, self.bg)  # 加入背景
+            plate_img = cv2.bitwise_or(fg, self.bg)
             plate_img,self.pointG = edgeFill(plate_img,self.pointG)
 
             # 形态学变换
@@ -111,10 +110,27 @@ class GenBluePlates:
             plate_img = random_envirment(plate_img, self.noplates_path)
             plate_img = AddGauss(plate_img, 1 + r(4))
             plate_img = addNoise(plate_img)
-            cv2.imshow("o",plate_img)
-            cv2.waitKey(0)
+            # cv2.imshow("o",plate_img)
+            # cv2.waitKey(0)
 
             return plate_img
+
+    def yolo_label_write(self,anno_infos,img_shape,yolo_label_txt):
+        """
+        生成label文件(txt)
+        :param anno_infos:标签信息
+        :param img_shape: 图像形状
+        :param yolo_label_txt: 保存目录
+        :return:
+        """
+        height,width,_ = img_shape
+        label_file = open(yolo_label_txt,'w')
+        for anno_info in anno_infos:
+            target_id,rect = anno_info
+            temp = (float(rect[0][0]),float(rect[1][0]),
+                    float(rect[0][1]),float(rect[1][1]))
+            yolo_temp = convert((width,height),temp)
+            label_file.write(str(target_id) + " " + " ".join([str(a) for a in yolo_temp]) + '\n')
 
     def genBatch(self, batchSize, outputPath, size):
         if not os.path.exists(outputPath):
@@ -122,15 +138,21 @@ class GenBluePlates:
         for i in range(batchSize):
             plateStr = self.genPlateString(-1, -1)
             img = self.getPlateImg(plateStr)
-            img = cv2.resize(img, size)
+            # img = cv2.resize(img, size)
             # cv2.imwrite(outputPath + "/" + str(plateStr) + ".jpg", img)
             # cv2.imencode(".jpg", img)[1].tofile(outputPath + "/" + str(plateStr) + ".jpg")
             cv2.imwrite(outputPath + "/" + str(i).zfill(2) + ".jpg", img)
+            str_rect = []
+            for x,y in zip(self.pointG,plateStr):
+                str_rect.append([y,rectangle_vertex(x[0],x[1],x[2],x[3])])
+            self.yolo_label_write(str_rect,img.shape,outputPath+"/"+str(i).zfill(2)+"txt")
+            str_rect.clear()
+            self.pointG.clear()
 
 
 def test():
     G = GenBluePlates("./font/platech.ttf", './font/platechar.ttf', "./NoPlates")
-    G.genBatch(1, "./plate", (272, 72))
+    G.genBatch(1, "./plate", (390, 130))
 
 
 if __name__ == '__main__':

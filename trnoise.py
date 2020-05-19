@@ -218,7 +218,7 @@ def convert(size, box):
     """
     坐标转换为yolo可训练的txt坐标
     :param size:图像大小
-    :param box:坐标
+    :param box:矩形坐标
     :return:yolo坐标
     """
     # print(f'box={box}')
@@ -240,8 +240,8 @@ def convert(size, box):
 def drawpoint(imgoo, pointG, str):
     """
     画出坐标点
-    :param imgoo:
-    :param pointG:
+    :param imgoo:图像
+    :param pointG:点坐标集
     :param str:
     :return:
     """
@@ -251,3 +251,37 @@ def drawpoint(imgoo, pointG, str):
             cv2.circle(img, ptemp, 3, (0, 255, 0), 2)
     cv2.imshow(str, img)
     cv2.waitKey(0)
+
+
+def rectangle_vertex(pointA,pointB,pointC,pointD):
+    """
+    矩形框坐标
+    :param pointA:左上角点
+    :param pointB: 右上角点
+    :param pointC: 左下角点
+    :param pointD: 右下角点
+    :return: 矩形框的左上角坐标和右下角坐标
+    """
+    left_point = (pointA[0]+pointC[0])/2
+    top_point = (pointA[1]+pointB[1])/2
+    right_point = (pointB[0]+pointD[0])/2
+    bottom_point = (pointC[1]+pointD[1])/2
+    point_A = (int(left_point),int(top_point))
+    point_D = (int(right_point),int(bottom_point))
+    roi_rect = [point_A,point_D]
+    return roi_rect
+
+
+def Roi_Correct(rect,img):
+    """
+    对矩形区修正，防止图片越界
+    :param rect: 矩形框的左上角坐标和右下角坐标
+    :param img: 图像
+    :return:
+    """
+    if rect[0]<0:
+        rect[0] = 0
+    if rect[1]<0:
+        rect[1] = 0
+    if rect[1]<img.shape[1]:
+        pass

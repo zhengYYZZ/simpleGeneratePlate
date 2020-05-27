@@ -285,3 +285,29 @@ def Roi_Correct(rect,img):
         rect[1] = 0
     if rect[1]<img.shape[1]:
         pass
+
+
+def get_dict_key(dicts, value):
+    '''
+    根据dict值获取键
+    :param dicts: dict
+    :param value: dict->value
+    :return: dict->key
+    '''
+    temp = None
+    for k, v in dicts.items():
+        if v == value:
+            temp = k
+    return temp
+
+
+def save_classes(dicts, fileName):
+    '''
+    保存label.data
+    :param dicts: 车牌字符dict
+    :param fileName: 文件名
+    :return: None
+    '''
+    with open(fileName, 'w') as f:
+        for k, v in dicts.items():
+            f.write(v + '\n')

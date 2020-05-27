@@ -8,13 +8,13 @@
 from trnoise import *
 import os
 
-chars = {0: "京", 1: "沪", 2: "津", 3: "渝", 4: "冀", 5: "晋", 6: "蒙", 7: "辽", 8: "吉", 9: "黑", 10: "苏",
-         11: "浙", 12: "皖", 13: "闽", 14: "赣", 15: "鲁", 16: "豫", 17: "鄂", 18: "湘", 19: "粤", 20: "桂",
-         21: "琼", 22: "川", 23: "贵", 24: "云", 25: "藏", 26: "陕", 27: "甘", 28: "青", 29: "宁", 30: "新",
-         31: "0", 32: "1", 33: "2", 34: "3", 35: "4", 36: "5", 37: "6", 38: "7", 39: "8", 40: "9",
-         41: "A", 42: "B", 43: "C", 44: "D", 45: "E", 46: "F", 47: "G", 48: "H", 49: "J", 50: "K",
-         51: "L", 52: "M", 53: "N", 54: "P", 55: "Q", 56: "R", 57: "S", 58: "T", 59: "U", 60: "V",
-         61: "W", 62: "X", 63: "Y", 64: "Z"}
+chars = {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9',
+         10: 'A', 11: 'B', 12: 'C', 13: 'D', 14: 'E', 15: 'F', 16: 'G', 17: 'H', 18: 'J', 19: 'K',
+         20: 'L', 21: 'M', 22: 'N', 23: 'P', 24: 'Q', 25: 'R', 26: 'S', 27: 'T', 28: 'U', 29: 'V',
+         30: 'W', 31: 'X', 32: 'Y', 33: 'Z', 34: '京', 35: '沪', 36: '津', 37: '渝', 38: '冀', 39: '晋',
+         40: '蒙', 41: '辽', 42: '吉', 43: '黑', 44: '苏', 45: '浙', 46: '皖', 47: '闽', 48: '赣', 49: '鲁',
+         50: '豫', 51: '鄂', 52: '湘', 53: '粤', 54: '桂', 55: '琼', 56: '川', 57: '贵', 58: '云', 59: '藏',
+         60: '陕', 61: '甘', 62: '青', 63: '宁', 64: '新'}
 
 
 class GenBluePlates:
@@ -26,7 +26,6 @@ class GenBluePlates:
         self.smu = cv2.imread("./images/smu2.jpg")
         self.noplates_path = []
         self.pointG = []
-        self.pointXml = []
         # 将NoPlates目录下的图片加入列表noplates_path
         for parent, parent_folder, filenames in os.walk(NoPlates):
             for filename in filenames:
@@ -69,21 +68,30 @@ class GenBluePlates:
         生成车牌号码string
         """
         plateStr = ""
+        plateKey = []
         box = [0, 0, 0, 0, 0, 0, 0]
         if pos != -1:
             box[pos] = 1
         for unit, cpos in zip(box, range(len(box))):
             if unit == 1:
                 plateStr += val
+                plateKey += val
             else:
                 if cpos == 0:
-                    plateStr += chars[r(31)]
+                    temp = 34 + r(31)
+                    plateStr += chars[temp]
+                    plateKey.append(get_dict_key(chars, chars[temp]))
                 elif cpos == 1:
-                    plateStr += chars[41 + r(24)]
+                    temp = 10 + r(24)
+                    plateStr += chars[temp]
+                    plateKey.append(get_dict_key(chars, chars[temp]))
                 else:
-                    plateStr += chars[31 + r(34)]
-
-        return plateStr
+                    temp = r(34)
+                    plateStr += chars[temp]
+                    plateKey.append(get_dict_key(chars, chars[temp]))
+        # print('str=' + plateStr)
+        # print(plateKey)
+        return plateStr, plateKey
 
     def getPlateImg(self, text):
         """
@@ -96,7 +104,7 @@ class GenBluePlates:
             # 白色字体
             fg = cv2.bitwise_not(fg)
             plate_img = cv2.bitwise_or(fg, self.bg)
-            plate_img,self.pointG = edgeFill(plate_img,self.pointG)
+            plate_img, self.pointG = edgeFill(plate_img, self.pointG)
 
             # 形态学变换
             # cv2.imshow("start",plate_img)
@@ -115,7 +123,7 @@ class GenBluePlates:
 
             return plate_img
 
-    def yolo_label_write(self,anno_infos,img_shape,yolo_label_txt):
+    def yoloLabelWrite(self, anno_infos, img_shape, yolo_label_txt):
         """
         生成label文件(txt)
         :param anno_infos:标签信息
@@ -123,29 +131,29 @@ class GenBluePlates:
         :param yolo_label_txt: 保存目录
         :return:
         """
-        height,width,_ = img_shape
-        label_file = open(yolo_label_txt,'w')
+        height, width, _ = img_shape
+        label_file = open(yolo_label_txt, 'w')
         for anno_info in anno_infos:
-            target_id,rect = anno_info
-            temp = (float(rect[0][0]),float(rect[1][0]),
-                    float(rect[0][1]),float(rect[1][1]))
-            yolo_temp = convert((width,height),temp)
+            target_id, rect = anno_info
+            temp = (float(rect[0][0]), float(rect[1][0]),
+                    float(rect[0][1]), float(rect[1][1]))
+            yolo_temp = convert((width, height), temp)
             label_file.write(str(target_id) + " " + " ".join([str(a) for a in yolo_temp]) + '\n')
 
     def genBatch(self, batchSize, outputPath, size):
         if not os.path.exists(outputPath):
             os.mkdir(outputPath)
         for i in range(batchSize):
-            plateStr = self.genPlateString(-1, -1)
+            plateStr, plateKey = self.genPlateString(-1, -1)
             img = self.getPlateImg(plateStr)
             # img = cv2.resize(img, size)
             # cv2.imwrite(outputPath + "/" + str(plateStr) + ".jpg", img)
             # cv2.imencode(".jpg", img)[1].tofile(outputPath + "/" + str(plateStr) + ".jpg")
             cv2.imwrite(outputPath + "/" + str(i).zfill(2) + ".jpg", img)
             str_rect = []
-            for x,y in zip(self.pointG,plateStr):
-                str_rect.append([y,rectangle_vertex(x[0],x[1],x[2],x[3])])
-            self.yolo_label_write(str_rect,img.shape,outputPath+"/"+str(i).zfill(2)+"txt")
+            for x, y in zip(self.pointG, plateKey):
+                str_rect.append([y, rectangle_vertex(x[0], x[1], x[2], x[3])])
+            self.yoloLabelWrite(str_rect, img.shape, outputPath + "/" + str(i).zfill(2) + "txt")
             str_rect.clear()
             self.pointG.clear()
 
@@ -153,6 +161,7 @@ class GenBluePlates:
 def test():
     G = GenBluePlates("./font/platech.ttf", './font/platechar.ttf', "./NoPlates")
     G.genBatch(1, "./plate", (390, 130))
+    save_classes(chars, "./plate/classes.txt")
 
 
 if __name__ == '__main__':

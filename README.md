@@ -1,7 +1,12 @@
 # simpleGeneratePlate
-简单的中国车牌生成脚本
+车牌生成程序,  
+生成车牌并生成可用于yolov3训练的标签文件  
 
 
+![genplate](screenshot/genplate.png)  
+
+> 生成的图片和标签文件都位于`./plate`文件夹下  
+> classes.txt也位于`./plate`文件下
 ## 环境
 ```
 python3 
@@ -19,5 +24,5 @@ opencv
 - [ ] 教练车牌
 
 ## TODO
+- 增加黄牌
 - 黄牌增加环境噪声，使其更接近真实环境
-- 增加新能源车牌生成

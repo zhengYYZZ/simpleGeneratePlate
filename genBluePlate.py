@@ -153,14 +153,14 @@ class GenBluePlates:
             str_rect = []
             for x, y in zip(self.pointG, plateKey):
                 str_rect.append([y, rectangle_vertex(x[0], x[1], x[2], x[3])])
-            self.yoloLabelWrite(str_rect, img.shape, outputPath + "/" + str(i).zfill(2) + "txt")
+            self.yoloLabelWrite(str_rect, img.shape, outputPath + "/" + str(i).zfill(2) + ".txt")
             str_rect.clear()
             self.pointG.clear()
 
 
 def test():
     G = GenBluePlates("./font/platech.ttf", './font/platechar.ttf', "./NoPlates")
-    G.genBatch(1, "./plate", (390, 130))
+    G.genBatch(10, "./plate", (390, 130))
     save_classes(chars, "./plate/classes.txt")
 
 

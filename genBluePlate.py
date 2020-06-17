@@ -108,7 +108,7 @@ class GenBluePlates:
 
             # 形态学变换
             # cv2.imshow("start",plate_img)
-            plate_img, self.pointG = rot(plate_img, r(60) - 30, plate_img.shape, 30, self.pointG)
+            # plate_img, self.pointG = rot(plate_img, r(60) - 30, plate_img.shape, 30, self.pointG)
             # print(self.pointG)
             # drawpoint(plate_img,self.pointG,"rot")
             plate_img, self.pointG = rotRandrom(plate_img, 10, (plate_img.shape[1], plate_img.shape[0]), self.pointG)
@@ -116,7 +116,7 @@ class GenBluePlates:
             # print(self.pointG)
             plate_img = tfactor(plate_img)
             plate_img = random_envirment(plate_img, self.noplates_path)
-            plate_img = AddGauss(plate_img, 1 + r(4))
+            plate_img = AddGauss(plate_img, 1 + r(2))
             plate_img = addNoise(plate_img)
             # cv2.imshow("o",plate_img)
             # cv2.waitKey(0)
@@ -160,7 +160,7 @@ class GenBluePlates:
 
 def test():
     G = GenBluePlates("./font/platech.ttf", './font/platechar.ttf', "./NoPlates")
-    G.genBatch(10, "./plate", (390, 130))
+    G.genBatch(1, "./plate", (390, 130))
     save_classes(chars, "./plate/classes.txt")
 
 

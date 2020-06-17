@@ -187,7 +187,7 @@ def addNoise(img, sdev=0.5, avg=10):
     return img
 
 
-def edgeFill(img,pointG,fill_size=20):
+def edgeFill(img,pointG,fill_size=0):
     """
     图像边缘填充
     :param img:图像
@@ -196,10 +196,10 @@ def edgeFill(img,pointG,fill_size=20):
     :return: 填充图像，坐标点
     """
 
-    top_fill = fill_size + random.randint(0,15)
-    bottom_fill = fill_size + random.randint(0,15)
-    left_fill = fill_size + random.randint(0,15)
-    right_fill = fill_size + random.randint(0,15)
+    top_fill = fill_size + random.randint(0,10)
+    bottom_fill = fill_size + random.randint(0,10)
+    left_fill = fill_size + random.randint(0,10)
+    right_fill = fill_size + random.randint(0,10)
     img = cv2.copyMakeBorder(img,top_fill,bottom_fill,left_fill,right_fill,cv2.BORDER_CONSTANT,value=(0,0,0))
 
     # 转换点坐标

@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Time    : 2020/5/10 15:54
+# @Author  : zyx
+# @Email   : zhengyixiang2@qq.com
+# @File    : trnoise.py
+
 from PIL import ImageFont
 from PIL import Image
 from PIL import ImageDraw
@@ -7,9 +14,6 @@ import copy
 import random
 from math import *
 
-"""
-用于白色字体车牌
-"""
 
 def rot(img, angel, shape, max_angel,point_dict):
     """
@@ -49,6 +53,7 @@ def rot(img, angel, shape, max_angel,point_dict):
 def rotRandrom(img, factor, size,point_dict):
     """
     添加透视畸变
+
     img 输入图像
     factor 畸变的参数
     size 为图片的目标尺寸
@@ -102,8 +107,6 @@ def tfactor(img):
 def random_envirment(img, data_set):
     """
     添加自然环境的噪声
-    黑色像素替换为背景
-    白色字体车牌使用这个函数添加环境噪声
     """
     index = r(len(data_set))
     env = cv2.imread(data_set[index])
@@ -184,7 +187,7 @@ def addNoise(img, sdev=0.5, avg=10):
     return img
 
 
-def edgeFill(img,pointG,fill_size=20):
+def edgeFill(img,pointG,fill_size=0):
     """
     图像边缘填充
     :param img:图像
@@ -193,10 +196,10 @@ def edgeFill(img,pointG,fill_size=20):
     :return: 填充图像，坐标点
     """
 
-    top_fill = fill_size + random.randint(0,15)
-    bottom_fill = fill_size + random.randint(0,15)
-    left_fill = fill_size + random.randint(0,15)
-    right_fill = fill_size + random.randint(0,15)
+    top_fill = fill_size + random.randint(0,10)
+    bottom_fill = fill_size + random.randint(0,10)
+    left_fill = fill_size + random.randint(0,10)
+    right_fill = fill_size + random.randint(0,10)
     img = cv2.copyMakeBorder(img,top_fill,bottom_fill,left_fill,right_fill,cv2.BORDER_CONSTANT,value=(0,0,0))
 
     # 转换点坐标
@@ -210,7 +213,6 @@ def edgeFill(img,pointG,fill_size=20):
         fill_point.clear()
 
     return img,fill_pointG
-
 
 def convert(size, box):
     """

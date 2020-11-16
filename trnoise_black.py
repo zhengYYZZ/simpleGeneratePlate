@@ -8,10 +8,10 @@ import random
 from math import *
 
 """
-用于白色字体车牌
+用于黑色字体车牌
 """
 
-def rot(img, angel, shape, max_angel,point_dict):
+def rot(img, angel, shape, max_angel, point_dict):
     """
     仿射变换
     使图像轻微的畸变
@@ -30,7 +30,7 @@ def rot(img, angel, shape, max_angel,point_dict):
         pts2 = np.float32([[0, 0], [interval, size[1]], [size[0] - interval, 0], [size[0], size_o[1]]])
 
     M = cv2.getPerspectiveTransform(pts1, pts2)
-    dst = cv2.warpPerspective(img, M, size)
+    dst = cv2.warpPerspective(img, M, size,None,None,None,(255,255,255))
 
     # 转换坐标点
     rot_pointG = []
@@ -38,7 +38,7 @@ def rot(img, angel, shape, max_angel,point_dict):
     for pointx4 in point_dict:
 
         for pt in pointx4:
-            rot_p = retRotPoint(pt,M)
+            rot_p = retRotPoint(pt, M)
             rot_point.append(rot_p)
         rot_pointG.append(rot_point.copy())
         rot_point.clear()
@@ -46,7 +46,7 @@ def rot(img, angel, shape, max_angel,point_dict):
     return dst, rot_pointG
 
 
-def rotRandrom(img, factor, size,point_dict):
+def rotRandrom(img, factor, size, point_dict):
     """
     添加透视畸变
     img 输入图像
@@ -58,12 +58,12 @@ def rotRandrom(img, factor, size,point_dict):
     pts2 = np.float32([[r(factor), r(factor)], [r(factor), shape[0] - r(factor)], [shape[1] - r(factor), r(factor)],
                        [shape[1] - r(factor), shape[0] - r(factor)]])
     M = cv2.getPerspectiveTransform(pts1, pts2)
-    dst = cv2.warpPerspective(img, M, size)
+    dst = cv2.warpPerspective(img, M, size,None,None,None,(255,255,255))
     rot_pointG = []
     rot_point = []
     for pointx4 in point_dict:
         for pt in pointx4:
-            rot_p = retRotPoint(pt,M)
+            rot_p = retRotPoint(pt, M)
             rot_point.append(rot_p)
         rot_pointG.append(rot_point.copy())
         rot_point.clear()
@@ -110,10 +110,12 @@ def random_envirment(img, data_set):
 
     env = cv2.resize(env, (img.shape[1], img.shape[0]))
 
-    bak = (img == 0)
-    bak = bak.astype(np.uint8) * 255
-    inv = cv2.bitwise_and(bak, env)
-    img = cv2.bitwise_or(inv, img)
+    gray_img = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+    ret, th = cv2.threshold(gray_img, 254, 255, cv2.THRESH_BINARY)
+    th = cv2.cvtColor(th,cv2.COLOR_GRAY2BGR)
+    inv = cv2.bitwise_and(th,env)
+    img = cv2.bitwise_xor(inv,img)
+
     return img
 
 
@@ -124,7 +126,7 @@ def GenCh(f, val):
     :param val: 字符
     :return: 单个字符图片
     """
-    img = Image.new("RGB", (45, 70), (255, 255, 255))  #"RGB"模式，(45,70)文件大小,(255,255,255)背景颜色
+    img = Image.new("RGB", (45, 70), (255, 255, 255))  # "RGB"模式，(45,70)文件大小,(255,255,255)背景颜色
     draw = ImageDraw.Draw(img)
     draw.text((0, 3), val, (0, 0, 0), font=f)
     img = img.resize((23, 70))
@@ -184,7 +186,7 @@ def addNoise(img, sdev=0.5, avg=10):
     return img
 
 
-def edgeFill(img,pointG,fill_size=20):
+def edgeFill(img, pointG, fill_size=20):
     """
     图像边缘填充
     :param img:图像
@@ -193,23 +195,24 @@ def edgeFill(img,pointG,fill_size=20):
     :return: 填充图像，坐标点
     """
 
-    top_fill = fill_size + random.randint(0,15)
-    bottom_fill = fill_size + random.randint(0,15)
-    left_fill = fill_size + random.randint(0,15)
-    right_fill = fill_size + random.randint(0,15)
-    img = cv2.copyMakeBorder(img,top_fill,bottom_fill,left_fill,right_fill,cv2.BORDER_CONSTANT,value=(0,0,0))
+    top_fill = fill_size + random.randint(0, 15)
+    bottom_fill = fill_size + random.randint(0, 15)
+    left_fill = fill_size + random.randint(0, 15)
+    right_fill = fill_size + random.randint(0, 15)
+    img = cv2.copyMakeBorder(img, top_fill, bottom_fill, left_fill, right_fill, cv2.BORDER_CONSTANT,
+                             value=(255, 255, 255))
 
     # 转换点坐标
     fill_pointG = []
     fill_point = []
     for pointx4 in pointG:
         for pt in pointx4:
-            temp = (pt[0]+left_fill,pt[1]+top_fill)
+            temp = (pt[0] + left_fill, pt[1] + top_fill)
             fill_point.append(temp)
         fill_pointG.append(fill_point.copy())
         fill_point.clear()
 
-    return img,fill_pointG
+    return img, fill_pointG
 
 
 def convert(size, box):
@@ -251,7 +254,7 @@ def drawpoint(imgoo, pointG, str):
     cv2.waitKey(0)
 
 
-def rectangle_vertex(pointA,pointB,pointC,pointD):
+def rectangle_vertex(pointA, pointB, pointC, pointD):
     """
     矩形框坐标
     :param pointA:左上角点
@@ -260,28 +263,28 @@ def rectangle_vertex(pointA,pointB,pointC,pointD):
     :param pointD: 右下角点
     :return: 矩形框的左上角坐标和右下角坐标
     """
-    left_point = (pointA[0]+pointC[0])/2
-    top_point = (pointA[1]+pointB[1])/2
-    right_point = (pointB[0]+pointD[0])/2
-    bottom_point = (pointC[1]+pointD[1])/2
-    point_A = (int(left_point),int(top_point))
-    point_D = (int(right_point),int(bottom_point))
-    roi_rect = [point_A,point_D]
+    left_point = (pointA[0] + pointC[0]) / 2
+    top_point = (pointA[1] + pointB[1]) / 2
+    right_point = (pointB[0] + pointD[0]) / 2
+    bottom_point = (pointC[1] + pointD[1]) / 2
+    point_A = (int(left_point), int(top_point))
+    point_D = (int(right_point), int(bottom_point))
+    roi_rect = [point_A, point_D]
     return roi_rect
 
 
-def Roi_Correct(rect,img):
+def Roi_Correct(rect, img):
     """
     对矩形区修正，防止图片越界
     :param rect: 矩形框的左上角坐标和右下角坐标
     :param img: 图像
     :return:
     """
-    if rect[0]<0:
+    if rect[0] < 0:
         rect[0] = 0
-    if rect[1]<0:
+    if rect[1] < 0:
         rect[1] = 0
-    if rect[1]<img.shape[1]:
+    if rect[1] < img.shape[1]:
         pass
 
 

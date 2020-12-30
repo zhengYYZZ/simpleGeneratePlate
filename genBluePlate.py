@@ -160,7 +160,7 @@ class GenBluePlates:
 
 def test():
     G = GenBluePlates("./font/platech.ttf", './font/platechar.ttf', "./NoPlates")
-    G.genBatch(6000, "./plate", (390, 130))
+    G.genBatch(10, "./plate", (390, 130))
     save_classes(chars, "./plate/classes.txt")
 
 

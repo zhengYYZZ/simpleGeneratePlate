@@ -7,6 +7,7 @@
 
 from trnoise import *
 import os
+from tqdm import tqdm
 
 chars = {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9',
          10: 'A', 11: 'B', 12: 'C', 13: 'D', 14: 'E', 15: 'F', 16: 'G', 17: 'H', 18: 'J', 19: 'K',
@@ -96,7 +97,6 @@ class GenBluePlates:
     def getPlateImg(self, text):
         """
         生成车牌图片
-
         text 车牌号码str
         """
         if len(text) == 7:
@@ -108,7 +108,7 @@ class GenBluePlates:
 
             # 形态学变换
             # cv2.imshow("start",plate_img)
-            # plate_img, self.pointG = rot(plate_img, r(60) - 30, plate_img.shape, 30, self.pointG)
+            plate_img, self.pointG = rot(plate_img, r(60) - 30, plate_img.shape, 30, self.pointG)
             # print(self.pointG)
             # drawpoint(plate_img,self.pointG,"rot")
             plate_img, self.pointG = rotRandrom(plate_img, 10, (plate_img.shape[1], plate_img.shape[0]), self.pointG)
@@ -116,7 +116,7 @@ class GenBluePlates:
             # print(self.pointG)
             plate_img = tfactor(plate_img)
             plate_img = random_envirment(plate_img, self.noplates_path)
-            plate_img = AddGauss(plate_img, 1 + r(2))
+            plate_img = AddGauss(plate_img, 1 + r(4))
             plate_img = addNoise(plate_img)
             # cv2.imshow("o",plate_img)
             # cv2.waitKey(0)
@@ -143,24 +143,24 @@ class GenBluePlates:
     def genBatch(self, batchSize, outputPath, size):
         if not os.path.exists(outputPath):
             os.mkdir(outputPath)
-        for i in range(batchSize):
+        for i in tqdm(range(batchSize)):
             plateStr, plateKey = self.genPlateString(-1, -1)
             img = self.getPlateImg(plateStr)
             # img = cv2.resize(img, size)
             # cv2.imwrite(outputPath + "/" + str(plateStr) + ".jpg", img)
             # cv2.imencode(".jpg", img)[1].tofile(outputPath + "/" + str(plateStr) + ".jpg")
-            cv2.imwrite(outputPath + "/" + str(i).zfill(2) + ".jpg", img)
+            cv2.imwrite(outputPath + "/b" + str(i).zfill(2) + ".jpg", img)
             str_rect = []
             for x, y in zip(self.pointG, plateKey):
                 str_rect.append([y, rectangle_vertex(x[0], x[1], x[2], x[3])])
-            self.yoloLabelWrite(str_rect, img.shape, outputPath + "/" + str(i).zfill(2) + ".txt")
+            self.yoloLabelWrite(str_rect, img.shape, outputPath + "/b" + str(i).zfill(2) + ".txt")
             str_rect.clear()
             self.pointG.clear()
 
 
 def test():
     G = GenBluePlates("./font/platech.ttf", './font/platechar.ttf', "./NoPlates")
-    G.genBatch(1, "./plate", (390, 130))
+    G.genBatch(6000, "./plate", (390, 130))
     save_classes(chars, "./plate/classes.txt")
 
 

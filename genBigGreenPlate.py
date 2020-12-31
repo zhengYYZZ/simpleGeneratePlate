@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time    : 2020/12/31 上午10:28
+# @Time    : 2020/12/31 下午12:30
 # @Author  : zyx
 # @Email   : zhengyixiang2@qq.com
-# @File    : genGreenPlate.py
+# @File    : genBigGreenPlate.py
 
 from trnoise_black import *
 import os
@@ -11,7 +11,7 @@ from tqdm import tqdm
 import cv2
 
 """
-生成小型汽车新能源车牌
+生成大型汽车新能源车牌
 """
 
 chars = {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9',
@@ -23,12 +23,12 @@ chars = {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8',
          60: '陕', 61: '甘', 62: '青', 63: '宁', 64: '新'}
 
 
-class GenGreenPlate:
+class GenBigGreenPlate:
     def __init__(self, fontCh, fontEng, NoPlates):
         self.fontC = ImageFont.truetype(fontCh, 43, 0)  # 中文字体
         self.fontE = ImageFont.truetype(fontEng, 55, 0)  # 英文字体
         self.img = np.array(Image.new("RGB", (226, 70), (255, 255, 255)))  # 空白图片
-        self.bg = cv2.resize(cv2.imread("./images/g1.png"), (226, 70))  # 车牌背景图片
+        self.bg = cv2.resize(cv2.imread("./images/g2.png"), (226, 70))  # 车牌背景图片
         self.smu = cv2.imread("./images/smu2.jpg")
         self.noplates_path = []
         self.pointG = []
@@ -90,7 +90,7 @@ class GenGreenPlate:
                     temp = 10 + r(24)
                     plateStr += chars[temp]
                     plateKey.append(get_dict_key(chars, chars[temp]))
-                elif cpos == 2:
+                elif cpos == 7:
                     # 新能源车牌的生成有规则,小型客车第三位是D/F，大型客车最后一位是D/F
                     tempstr = ['D', 'F'][r(2)]
                     plateStr += tempstr
@@ -153,17 +153,17 @@ class GenGreenPlate:
         for i in tqdm(range(batchSize)):
             plateStr, plateKey = self.genPlateString(-1, -1)
             img = self.getPlateImg(plateStr)
-            cv2.imwrite(outputPath + "/" + str('g1') + str(i).zfill(5) + ".jpg", img)
+            cv2.imwrite(outputPath + "/" + str('g2') + str(i).zfill(5) + ".jpg", img)
             str_rect = []
             for x, y in zip(self.pointG, plateKey):
                 str_rect.append([y, rectangle_vertex(x[0], x[1], x[2], x[3])])
-            self.yoloLabelWrite(str_rect, img.shape, outputPath + "/" + str('g1') + str(i).zfill(5) + ".txt")
+            self.yoloLabelWrite(str_rect, img.shape, outputPath + "/" + str('g2') + str(i).zfill(5) + ".txt")
             str_rect.clear()
             self.pointG.clear()
 
 
 def test():
-    G = GenGreenPlate("./font/platech.ttf", './font/platechar.ttf', "./NoPlates")
+    G = GenBigGreenPlate("./font/platech.ttf", './font/platechar.ttf', "./NoPlates")
     G.genBatch(1, "./plate", (420, 98))
     save_classes(chars, "./plate/classes.txt")
 

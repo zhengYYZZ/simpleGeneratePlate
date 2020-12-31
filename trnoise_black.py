@@ -149,6 +149,35 @@ def GenCh1(f, val):
     return A
 
 
+# def GenChGreen(f, val):
+#     """
+#     生成中文字符
+#     :param f: 字体
+#     :param val: 字符
+#     :return: 单个字符图片
+#     """
+#     img = Image.new("RGB", (45, 70), (255, 255, 255))  # "RGB"模式，(45,70)文件大小,(255,255,255)背景颜色
+#     draw = ImageDraw.Draw(img)
+#     draw.text((0, 3), val, (0, 0, 0), font=f)
+#     img = img.resize((21, 63))
+#     A = np.array(img)
+#
+#     return A
+
+
+def GenChGreen1(f, val):
+    """
+    生成英文字符和数字
+    :param f: 字体
+    :param val: 字符
+    :return: 单个字符图片
+    """
+    img = Image.new("RGB", (22, 63), (255, 255, 255))
+    draw = ImageDraw.Draw(img)
+    draw.text((0, 5), val.encode('utf-8').decode('utf-8'), (0, 0, 0), font=f)
+    A = np.array(img)
+    return A
+
 def AddGauss(img, level):
     """
     添加高斯模糊

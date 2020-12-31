@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time    : 2020/5/10 20:22
+# @Time    : 2020/12/31 上午10:28
 # @Author  : zyx
 # @Email   : zhengyixiang2@qq.com
-# @File    : genYellowPlate.py
+# @File    : genGreenPlate.py
 
 from trnoise_black import *
 import os
 from tqdm import tqdm
+import cv2
 
 """
-生成黄色车牌
+生成小型汽车新能源车牌
 """
 
 chars = {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9',
@@ -22,12 +23,12 @@ chars = {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8',
          60: '陕', 61: '甘', 62: '青', 63: '宁', 64: '新'}
 
 
-class GenYellowPlates:
+class GenGreenPlate:
     def __init__(self, fontCh, fontEng, NoPlates):
         self.fontC = ImageFont.truetype(fontCh, 43, 0)  # 中文字体
-        self.fontE = ImageFont.truetype(fontEng, 58, 0)  # 英文字体
+        self.fontE = ImageFont.truetype(fontEng, 55, 0)  # 英文字体
         self.img = np.array(Image.new("RGB", (226, 70), (255, 255, 255)))  # 空白图片
-        self.bg = cv2.resize(cv2.imread("./images/y1.bmp"), (226, 70))  # 车牌背景图片
+        self.bg = cv2.resize(cv2.imread("./images/g1.png"), (226, 70))  # 车牌背景图片
         self.smu = cv2.imread("./images/smu2.jpg")
         self.noplates_path = []
         self.pointG = []
@@ -47,24 +48,23 @@ class GenYellowPlates:
         # 调整字符间的间距
         # 第一个汉字
         self.img[0:70, offset + 8:offset + 8 + 23] = GenCh(self.fontC, text[0])
-        self.pointG.append([(offset + 8 - 1, 8), (offset + 8 + 23 + 1, 8),
-                            (offset + 8 - 1, 62), (offset + 8 + 23 + 1, 62)])  # p1(x,y),p2(x,y)...
+        self.pointG.append([(offset + 8 - 1, 8), (offset + 8 + 21 + 1, 8),
+                            (offset + 8 - 1, 62), (offset + 8 + 21 + 1, 62)])  # p1(x,y),p2(x,y)...
         # 第二个字符
-        self.img[0:70, offset + 8 + 23 + 6:offset + 8 + 23 + 6 + 23] = GenCh1(self.fontE, text[1])
-        self.pointG.append([(offset + 8 + 23 + 6 - 1, 8), (offset + 8 + 23 + 6 + 23 + 1, 8),
-                            (offset + 8 + 23 + 6 - 1, 62), (offset + 8 + 23 + 6 + 23 + 1, 62)])
+        self.img[0:63, offset + 8 + 22 + 6:offset + 8 + 22 + 6 + 22] = GenChGreen1(self.fontE, text[1])
+        self.pointG.append([(offset + 8 + 22 + 6 - 1, 8), (offset + 8 + 22 + 6 + 22 + 1, 8),
+                            (offset + 8 + 22 + 6 - 1, 62), (offset + 8 + 22 + 6 + 22 + 1, 62)])
         # 后面五个字符
-        for i in range(5):
-            base = offset + 8 + 23 + 6 + 23 + 17 + i * 23 + i * 6
-            self.img[0:70, base: base + 23] = GenCh1(self.fontE, text[i + 2])
-            self.pointG.append([(base - 1, 8), (base + 23 + 1, 8),
-                                (base - 1, 62), (base + 23 + 1, 62)])
+        for i in range(6):
+            base = offset + 8 + 22 + 6 + 22 + 17 + i * 24
+            self.img[0:63, base: base + 22] = GenChGreen1(self.fontE, text[i + 2])
+            self.pointG.append([(base - 1, 8), (base + 22 + 1, 8),
+                                (base - 1, 62), (base + 22 + 1, 62)])
         # for pp in self.pointG:
         #     for ptemp in pp:
         #         cv2.circle(self.img, ptemp, 3, (0, 255, 0), 2)
-        # cv2.imshow("img", self.img)
+        # cv2.imshow("img",self.img)
         # cv2.waitKey(0)
-        # print(self.pointG)
 
         return self.img
 
@@ -74,7 +74,7 @@ class GenYellowPlates:
         """
         plateStr = ""
         plateKey = []
-        box = [0, 0, 0, 0, 0, 0, 0]
+        box = [0, 0, 0, 0, 0, 0, 0, 0]
         if pos != -1:
             box[pos] = 1
         for unit, cpos in zip(box, range(len(box))):
@@ -90,6 +90,11 @@ class GenYellowPlates:
                     temp = 10 + r(24)
                     plateStr += chars[temp]
                     plateKey.append(get_dict_key(chars, chars[temp]))
+                elif cpos == 2:
+                    # 新能源车牌的生成有规则,小型客车第三位是D/F，大型客车最后一位是D/F
+                    tempstr = ['D', 'F'][r(2)]
+                    plateStr += tempstr
+                    plateKey.append(get_dict_key(chars, tempstr))
                 else:
                     temp = r(34)
                     plateStr += chars[temp]
@@ -103,33 +108,26 @@ class GenYellowPlates:
         生成车牌图片
         text 车牌号码str
         """
-        if len(text) == 7:
+        if len(text) == 8:
             fg = self.draw_string(text.encode('utf-8').decode(encoding="utf-8"))
-            # 白色字体
-            # fg = cv2.bitwise_not(fg)
-            # plate_img = cv2.bitwise_or(fg, self.bg)
-            plate_img = cv2.bitwise_and(fg,self.bg)
+            plate_img = cv2.bitwise_and(fg, self.bg)
             plate_img, self.pointG = edgeFill(plate_img, self.pointG)
-
             # 形态学变换
-            # cv2.imshow("start",plate_img)
             plate_img, self.pointG = rot(plate_img, r(60) - 30, plate_img.shape, 30, self.pointG)
-            # print(self.pointG)
-            # drawpoint(plate_img,self.pointG,"rot")
             plate_img, self.pointG = rotRandrom(plate_img, 10, (plate_img.shape[1], plate_img.shape[0]), self.pointG)
             # drawpoint(plate_img, self.pointG, "rotrandrom")
             # print(self.pointG)
             # cv2.imshow('sst',plate_img)
             # cv2.waitKey(0)
             plate_img = random_envirment(plate_img, self.noplates_path)
-            plate_img = tfactor(plate_img)        # 饱和度光照的噪声
+            plate_img = tfactor(plate_img)  # 饱和度光照的噪声
             # cv2.imshow('sst',plate_img)
             # cv2.waitKey(0)
-            plate_img = AddGauss(plate_img, 1 + r(4))   # 高斯模糊
-            plate_img = addNoise(plate_img)             # 添加噪声
+            plate_img = AddGauss(plate_img, 1 + r(4))  # 高斯模糊
+            plate_img = addNoise(plate_img)  # 添加噪声
+
             # cv2.imshow("o",plate_img)
             # cv2.waitKey(0)
-
             return plate_img
 
     def yoloLabelWrite(self, anno_infos, img_shape, yolo_label_txt):
@@ -155,24 +153,18 @@ class GenYellowPlates:
         for i in tqdm(range(batchSize)):
             plateStr, plateKey = self.genPlateString(-1, -1)
             img = self.getPlateImg(plateStr)
-            #cv2.imshow("img",img)
-            #cv2.waitKey(0)
-            # img = cv2.resize(img, size)
-            # cv2.imwrite(outputPath + "/" + str(plateStr) + ".jpg", img)
-            # cv2.imencode(".jpg", img)[1].tofile(outputPath + "/" + str(plateStr) + ".jpg")
-            cv2.imwrite(outputPath + "/" + str('y') + str(i).zfill(2) + ".jpg", img)
+            cv2.imwrite(outputPath + "/" + str('g1') + str(i).zfill(2) + ".jpg", img)
             str_rect = []
             for x, y in zip(self.pointG, plateKey):
                 str_rect.append([y, rectangle_vertex(x[0], x[1], x[2], x[3])])
-            self.yoloLabelWrite(str_rect, img.shape, outputPath + "/" + str('y') + str(i).zfill(2) + ".txt")
+            self.yoloLabelWrite(str_rect, img.shape, outputPath + "/" + str('g1') + str(i).zfill(2) + ".txt")
             str_rect.clear()
             self.pointG.clear()
 
 
 def test():
-    G = GenYellowPlates("./font/platech.ttf", './font/platechar.ttf', "./NoPlates")
-    G.genBatch(10, "./plate", (390, 130))
-    save_classes(chars, "./plate/classes.txt")
+    G = GenGreenPlate("./font/platech.ttf", './font/platechar.ttf', "./NoPlates")
+    G.genBatch(1, "./plate", (420, 98))
 
 
 if __name__ == '__main__':

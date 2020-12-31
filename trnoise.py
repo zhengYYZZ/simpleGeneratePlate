@@ -142,7 +142,7 @@ def GenCh1(f, val):
     """
     img = Image.new("RGB", (23, 70), (255, 255, 255))
     draw = ImageDraw.Draw(img)
-    draw.text((0, 2), val.encode('utf-8').decode('utf-8'), (0, 0, 0), font=f)
+    draw.text((0, 3), val.encode('utf-8').decode('utf-8'), (0, 0, 0), font=f)
     A = np.array(img)
     return A
 

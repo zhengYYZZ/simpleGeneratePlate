@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time    : 2020/12/31 下午2:27
+# @Time    : 2021/1/3 下午10:43
 # @Author  : zyx
 # @Email   : zhengyixiang2@qq.com
-# @File    : genBlackHKM.py
 
 """
-生成港澳入境车牌
+生成领馆车牌
 """
 from trnoise import *
 import os
@@ -23,12 +22,12 @@ chars = {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8',
 
 chars2 = {65: '港',66:'澳',67:'领'}
 
-class GenBlackHKM:
+class genBlackConsulate:
     def __init__(self, fontCh, fontEng, NoPlates):
         self.fontC = ImageFont.truetype(fontCh, 43, 0)  # 中文字体
         self.fontE = ImageFont.truetype(fontEng, 58, 0)  # 英文字体
         self.img = np.array(Image.new("RGB", (226, 70), (255, 255, 255)))  # 空白图片
-        self.bg = cv2.resize(cv2.imread("./images/new/black_140.PNG"), (226, 70))  # 车牌背景图片
+        self.bg = cv2.resize(cv2.imread("./images/new/black_shi_140.PNG"), (226, 70))  # 车牌背景图片
         self.smu = cv2.imread("./images/smu2.jpg")
         self.noplates_path = []
         self.pointG = []
@@ -54,16 +53,28 @@ class GenBlackHKM:
         self.img[0:70, offset + 8 + 23 + 6:offset + 8 + 23 + 6 + 23] = GenCh1(self.fontE, text[1])
         self.pointG.append([(offset + 8 + 23 + 6 - 1, 8), (offset + 8 + 23 + 6 + 23 + 1, 8),
                             (offset + 8 + 23 + 6 - 1, 62), (offset + 8 + 23 + 6 + 23 + 1, 62)])
-        # 后面五个字符
-        for i in range(5):
-            base = offset + 8 + 23 + 6 + 23 + 17 + i * 23 + i * 6
-            if i == 4:
-                # print(text[i + 2])
-                self.img[0:70, base: base + 23] = GenCh(self.fontC, text[i + 2])
-            else:
-                self.img[0:70, base: base + 23] = GenCh1(self.fontE, text[i + 2])
-            self.pointG.append([(base - 1, 8), (base + 23 + 1, 8),
-                                (base - 1, 62), (base + 23 + 1, 62)])
+        base = offset + 8 + 23 + 6
+        add_space = 23+6
+        self.img[0:70, base + add_space :base + 23 + add_space] = GenCh1(self.fontE, text[2])
+        self.pointG.append([(base + add_space- 1, 8), (base + 23 + add_space + 1, 8),
+                            (base + add_space- 1, 62), (base+ 23 + add_space + 1, 62)])
+        base = base + add_space
+        self.img[0:70, base + add_space:base + 23 + add_space] = GenCh1(self.fontE, text[3])
+        self.pointG.append([(base + add_space - 1, 8), (base + 23 + add_space + 1, 8),
+                            (base + add_space - 1, 62), (base + 23 + add_space + 1, 62)])
+        base = base + add_space+13
+        self.img[0:70, base + add_space:base + 23 + add_space] = GenCh1(self.fontE, text[4])
+        self.pointG.append([(base + add_space - 1, 8), (base + 23 + add_space + 1, 8),
+                            (base + add_space - 1, 62), (base + 23 + add_space + 1, 62)])
+        base = base + add_space
+        self.img[0:70, base + add_space:base + 23 + add_space] = GenCh1(self.fontE, text[5])
+        self.pointG.append([(base + add_space - 1, 8), (base + 23 + add_space + 1, 8),
+                            (base + add_space - 1, 62), (base + 23 + add_space + 1, 62)])
+        base = base + add_space
+        self.img[0:70, base + add_space:base + 23 + add_space] = GenCh(self.fontC, text[6])
+        self.pointG.append([(base + add_space - 1, 8), (base + 23 + add_space + 1, 8),
+                            (base + add_space - 1, 62), (base + 23 + add_space + 1, 62)])
+
         # for pp in self.pointG:
         #     for ptemp in pp:
         #         cv2.circle(self.img, ptemp, 3, (0, 255, 0), 2)
@@ -88,19 +99,19 @@ class GenBlackHKM:
                 plateKey += val
             else:
                 if cpos == 0:
-                    tempstr = '粤'
-                    plateStr += tempstr
-                    plateKey.append(get_dict_key(chars, tempstr))
+                    temp = 34 + r(31)
+                    plateStr += chars[temp]
+                    plateKey.append(get_dict_key(chars, chars[temp]))
                 elif cpos == 1:
-                    tempstr = 'Z'
-                    plateStr += tempstr
-                    plateKey.append(get_dict_key(chars, tempstr))
+                    temp = 10 + r(24)
+                    plateStr += chars[temp]
+                    plateKey.append(get_dict_key(chars, chars[temp]))
                 elif cpos == 6:
-                    tempstr = ['港', '澳'][r(2)]
-                    plateStr += tempstr
-                    plateKey.append(get_dict_key(chars2, tempstr))
+                    tempstr = ['领']
+                    plateStr += tempstr[0]
+                    plateKey.append(get_dict_key(chars2, tempstr[0]))
                 else:
-                    temp = r(34)
+                    temp = r(10)
                     plateStr += chars[temp]
                     plateKey.append(get_dict_key(chars, chars[temp]))
         # print('str=' + plateStr)
@@ -117,23 +128,6 @@ class GenBlackHKM:
             # 白色字体
             fg = cv2.bitwise_not(fg)
             plate_img = cv2.bitwise_or(fg, self.bg)
-            # plate_img, self.pointG = edgeFill(plate_img, self.pointG)
-
-            # 形态学变换
-            # cv2.imshow("start",plate_img)
-            # plate_img, self.pointG = rot(plate_img, r(60) - 30, plate_img.shape, 30, self.pointG)
-            # # print(self.pointG)
-            # # drawpoint(plate_img,self.pointG,"rot")
-            # plate_img, self.pointG = rotRandrom(plate_img, 10, (plate_img.shape[1], plate_img.shape[0]), self.pointG)
-            # # drawpoint(plate_img, self.pointG, "rotrandrom")
-            # # print(self.pointG)
-            # plate_img = tfactor(plate_img)
-            # plate_img = random_envirment(plate_img, self.noplates_path)
-            # plate_img = AddGauss(plate_img, 1 + r(4))
-            # plate_img = addNoise(plate_img)
-            # # cv2.imshow("o",plate_img)
-            # cv2.waitKey(0)
-
             return plate_img
 
     def yoloLabelWrite(self, anno_infos, img_shape, yolo_label_txt):
@@ -162,17 +156,17 @@ class GenBlackHKM:
             # img = cv2.resize(img, size)
             # cv2.imwrite(outputPath + "/" + str(plateStr) + ".jpg", img)
             # cv2.imencode(".jpg", img)[1].tofile(outputPath + "/" + str(plateStr) + ".jpg")
-            cv2.imwrite(outputPath + "/HKM" + str(i).zfill(2) + ".jpg", img)
+            cv2.imwrite(outputPath + "/C" + str(i).zfill(2) + ".jpg", img)
             str_rect = []
             for x, y in zip(self.pointG, plateKey):
                 str_rect.append([y, rectangle_vertex(x[0], x[1], x[2], x[3])])
-            self.yoloLabelWrite(str_rect, img.shape, outputPath + "/HKM" + str(i).zfill(2) + ".txt")
+            self.yoloLabelWrite(str_rect, img.shape, outputPath + "/C" + str(i).zfill(2) + ".txt")
             str_rect.clear()
             self.pointG.clear()
 
 
 def test():
-    G = GenBlackHKM("./font/platech.ttf", './font/platechar.ttf', "./NoPlates")
+    G = genBlackConsulate("./font/platech.ttf", './font/platechar.ttf', "./NoPlates")
     G.genBatch(10, "./plate", (390, 130))
     print(type(chars))
     newChars = {**chars,**chars2}

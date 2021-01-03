@@ -103,7 +103,7 @@ class genBlackConsulate:
                     plateStr += chars[temp]
                     plateKey.append(get_dict_key(chars, chars[temp]))
                 elif cpos == 1:
-                    temp = 10 + r(24)
+                    temp = r(10)
                     plateStr += chars[temp]
                     plateKey.append(get_dict_key(chars, chars[temp]))
                 elif cpos == 6:

@@ -134,6 +134,21 @@ def GenCh(f, val):
 
     return A
 
+def GenCh_red(f, val):
+    """
+    生成中文字符
+    :param f: 字体
+    :param val: 字符
+    :return: 单个字符图片
+    """
+    img = Image.new("RGB", (45, 70), (255, 255, 255))  # "RGB"模式，(45,70)文件大小,(255,255,255)背景颜色
+    draw = ImageDraw.Draw(img)
+    draw.text((0, 3), val, (0, 0, 255), font=f)
+    img = img.resize((23, 70))
+    A = np.array(img)
+
+    return A
+
 
 def GenCh1(f, val):
     """

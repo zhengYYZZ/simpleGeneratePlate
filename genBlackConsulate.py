@@ -10,17 +10,8 @@
 from trnoise import *
 import os
 from tqdm import tqdm
-import json
+from carPlateChars import *
 
-chars = {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9',
-         10: 'A', 11: 'B', 12: 'C', 13: 'D', 14: 'E', 15: 'F', 16: 'G', 17: 'H', 18: 'J', 19: 'K',
-         20: 'L', 21: 'M', 22: 'N', 23: 'P', 24: 'Q', 25: 'R', 26: 'S', 27: 'T', 28: 'U', 29: 'V',
-         30: 'W', 31: 'X', 32: 'Y', 33: 'Z', 34: '京', 35: '沪', 36: '津', 37: '渝', 38: '冀', 39: '晋',
-         40: '蒙', 41: '辽', 42: '吉', 43: '黑', 44: '苏', 45: '浙', 46: '皖', 47: '闽', 48: '赣', 49: '鲁',
-         50: '豫', 51: '鄂', 52: '湘', 53: '粤', 54: '桂', 55: '琼', 56: '川', 57: '贵', 58: '云', 59: '藏',
-         60: '陕', 61: '甘', 62: '青', 63: '宁', 64: '新'}
-
-chars2 = {65: '港',66:'澳',67:'领'}
 
 class genBlackConsulate:
     def __init__(self, fontCh, fontEng, NoPlates):
@@ -54,15 +45,15 @@ class genBlackConsulate:
         self.pointG.append([(offset + 8 + 23 + 6 - 1, 8), (offset + 8 + 23 + 6 + 23 + 1, 8),
                             (offset + 8 + 23 + 6 - 1, 62), (offset + 8 + 23 + 6 + 23 + 1, 62)])
         base = offset + 8 + 23 + 6
-        add_space = 23+6
-        self.img[0:70, base + add_space :base + 23 + add_space] = GenCh1(self.fontE, text[2])
-        self.pointG.append([(base + add_space- 1, 8), (base + 23 + add_space + 1, 8),
-                            (base + add_space- 1, 62), (base+ 23 + add_space + 1, 62)])
+        add_space = 23 + 6
+        self.img[0:70, base + add_space:base + 23 + add_space] = GenCh1(self.fontE, text[2])
+        self.pointG.append([(base + add_space - 1, 8), (base + 23 + add_space + 1, 8),
+                            (base + add_space - 1, 62), (base + 23 + add_space + 1, 62)])
         base = base + add_space
         self.img[0:70, base + add_space:base + 23 + add_space] = GenCh1(self.fontE, text[3])
         self.pointG.append([(base + add_space - 1, 8), (base + 23 + add_space + 1, 8),
                             (base + add_space - 1, 62), (base + 23 + add_space + 1, 62)])
-        base = base + add_space+13
+        base = base + add_space + 13
         self.img[0:70, base + add_space:base + 23 + add_space] = GenCh1(self.fontE, text[4])
         self.pointG.append([(base + add_space - 1, 8), (base + 23 + add_space + 1, 8),
                             (base + add_space - 1, 62), (base + 23 + add_space + 1, 62)])
@@ -169,7 +160,7 @@ def test():
     G = genBlackConsulate("./font/platech.ttf", './font/platechar.ttf', "./NoPlates")
     G.genBatch(10, "./plate", (390, 130))
     print(type(chars))
-    newChars = {**chars,**chars2}
+    newChars = {**chars, **chars2}
     save_classes(newChars, "./plate/classes.txt")
 
 

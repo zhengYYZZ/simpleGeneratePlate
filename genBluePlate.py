@@ -109,7 +109,7 @@ class GenBluePlates:
             # print(self.pointG)
             plate_img = tfactor(plate_img)
             plate_img = random_envirment(plate_img, self.noplates_path)
-            plate_img = AddGauss(plate_img, 1 + r(4))
+            plate_img = AddGauss(plate_img, r(3))
             plate_img = addNoise(plate_img)
             # cv2.imshow("o",plate_img)
             # cv2.waitKey(0)

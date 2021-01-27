@@ -9,6 +9,9 @@
   
 关于如何训练，查看<https://github.com/Feeyao/License-plate-recognition>  
 
+## 流程图
+![flowChart](screenshot/flowChart.png)
+
 ## 环境
 ```
 python3 

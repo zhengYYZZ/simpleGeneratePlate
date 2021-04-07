@@ -8,6 +8,7 @@
 > classes.txt也位于`./plate`文件下  
   
 关于训练，查看<https://github.com/Feeyao/License-plate-recognition>  
+或者<https://github.com/AlexeyAB/darknet#how-to-train-to-detect-your-custom-objects>
 
 ## 流程图
 ![flowChart](screenshot/flowChart.png)

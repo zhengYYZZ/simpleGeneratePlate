@@ -7,7 +7,11 @@
 > 生成的图片和标签文件都位于`./plate`文件夹下  
 > classes.txt也位于`./plate`文件下  
   
-关于如何训练，查看<https://github.com/Feeyao/License-plate-recognition>  
+关于训练，查看<https://github.com/Feeyao/License-plate-recognition>  
+或者<https://github.com/AlexeyAB/darknet#how-to-train-to-detect-your-custom-objects>
+
+## 流程图
+![flowChart](screenshot/flowChart.png)
 
 ## 环境
 ```
@@ -22,8 +26,8 @@ opencv
 - [x] 大型新能源汽车号牌
 - [x] 小型新能源汽车号牌
 - [ ] 白色警用车牌
-- [x] 使馆/港澳车牌
-- [ ] 教练车牌
+- [ ] 使馆/港澳车牌
+- [x] 教练车牌
 
 ## TODO
-- 增加新能源车牌
+- 增加双层车牌

@@ -230,7 +230,7 @@ def addNoise(img, sdev=0.5, avg=10):
     return img
 
 
-def edgeFill(img, pointG, fill_size=20):
+def edgeFill(img, pointG, fill_size=0):
     """
     图像边缘填充
     :param img:图像

@@ -109,7 +109,7 @@ class GenBluePlates:
             # print(self.pointG)
             plate_img = tfactor(plate_img)
             plate_img = random_envirment(plate_img, self.noplates_path)
-            plate_img = AddGauss(plate_img, r(3))
+            plate_img = AddGauss(plate_img, 2+r(3))
             plate_img = addNoise(plate_img)
             # cv2.imshow("o",plate_img)
             # cv2.waitKey(0)
@@ -153,8 +153,8 @@ class GenBluePlates:
 
 def test():
     G = GenBluePlates("./font/platech.ttf", './font/platechar.ttf', "./NoPlates")
-    G.genBatch(10, "./plate", (390, 130))
-    save_classes(chars, "./plate/classes.txt")
+    G.genBatch(800, "./plate", (390, 130))
+    # save_classes(chars, "./plate/classes.txt")
 
 
 if __name__ == '__main__':

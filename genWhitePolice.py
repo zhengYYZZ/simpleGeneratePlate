@@ -125,7 +125,7 @@ class GenWhitePolice:
             # fg = cv2.bitwise_not(fg)
             # plate_img = cv2.bitwise_or(fg, self.bg)
             plate_img = cv2.bitwise_and(fg,self.bg)
-            plate_img, self.pointG = edgeFill(plate_img, self.pointG)
+            # plate_img, self.pointG = edgeFill(plate_img, self.pointG)
 
             # # 形态学变换
             # # cv2.imshow("start",plate_img)
@@ -141,7 +141,7 @@ class GenWhitePolice:
             # plate_img = tfactor(plate_img)        # 饱和度光照的噪声
             # # cv2.imshow('sst',plate_img)
             # # cv2.waitKey(0)
-            # plate_img = AddGauss(plate_img, 1 + r(4))   # 高斯模糊
+            plate_img = AddGauss(plate_img, 2+r(3))   # 高斯模糊
             # plate_img = addNoise(plate_img)             # 添加噪声
             # # cv2.imshow("o",plate_img)
             # # cv2.waitKey(0)
@@ -187,7 +187,7 @@ class GenWhitePolice:
 
 def test():
     G = GenWhitePolice("./font/platech.ttf", './font/platechar.ttf', "./NoPlates")
-    G.genBatch(10, "./plate", (390, 130))
+    G.genBatch(50, "./plate", (390, 130))
 
 
 if __name__ == '__main__':

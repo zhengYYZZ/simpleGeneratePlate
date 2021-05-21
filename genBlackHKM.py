@@ -120,8 +120,8 @@ class GenBlackHKM:
             # # print(self.pointG)
             # plate_img = tfactor(plate_img)
             # plate_img = random_envirment(plate_img, self.noplates_path)
-            # plate_img = AddGauss(plate_img, 1 + r(4))
-            # plate_img = addNoise(plate_img)
+            plate_img = AddGauss(plate_img, 2+r(3))
+            plate_img = addNoise(plate_img)
             # # cv2.imshow("o",plate_img)
             # cv2.waitKey(0)
 
@@ -164,10 +164,9 @@ class GenBlackHKM:
 
 def test():
     G = GenBlackHKM("./font/platech.ttf", './font/platechar.ttf', "./NoPlates")
-    G.genBatch(10, "./plate", (390, 130))
-    print(type(chars))
-    newChars = {**chars,**chars2}
-    save_classes(newChars, "./plate/classes.txt")
+    G.genBatch(50, "./plate", (390, 130))
+    # newChars = {**chars,**chars2}
+    # save_classes(newChars, "./plate/classes.txt")
 
 
 if __name__ == '__main__':

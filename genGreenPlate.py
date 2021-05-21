@@ -116,7 +116,7 @@ class GenGreenPlate:
             plate_img = tfactor(plate_img)  # 饱和度光照的噪声
             # cv2.imshow('sst',plate_img)
             # cv2.waitKey(0)
-            plate_img = AddGauss(plate_img, r(3))  # 高斯模糊
+            plate_img = AddGauss(plate_img, 2+r(3))  # 高斯模糊
             plate_img = addNoise(plate_img)  # 添加噪声
 
             # cv2.imshow("o",plate_img)
@@ -157,8 +157,8 @@ class GenGreenPlate:
 
 def test():
     G = GenGreenPlate("./font/platech.ttf", './font/platechar.ttf', "./NoPlates")
-    G.genBatch(1, "./plate", (420, 98))
-    save_classes(chars, "./plate/classes.txt")
+    G.genBatch(150, "./plate", (420, 98))
+    # save_classes(chars, "./plate/classes.txt")
 
 
 if __name__ == '__main__':

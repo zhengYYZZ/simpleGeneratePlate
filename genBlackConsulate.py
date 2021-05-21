@@ -119,6 +119,8 @@ class genBlackConsulate:
             # 白色字体
             fg = cv2.bitwise_not(fg)
             plate_img = cv2.bitwise_or(fg, self.bg)
+            plate_img = AddGauss(plate_img, 2+r(3))
+            plate_img = addNoise(plate_img)
             return plate_img
 
     def yoloLabelWrite(self, anno_infos, img_shape, yolo_label_txt):
@@ -158,7 +160,7 @@ class genBlackConsulate:
 
 def test():
     G = genBlackConsulate("./font/platech.ttf", './font/platechar.ttf', "./NoPlates")
-    G.genBatch(10, "./plate", (390, 130))
+    G.genBatch(50, "./plate", (390, 130))
     print(type(chars))
     newChars = {**chars, **chars2}
     save_classes(newChars, "./plate/classes.txt")
